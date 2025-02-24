@@ -1,37 +1,47 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-# Título da Dashboard
-st.title("Dashboard de Análise de Marketing")
+# Carregar os dados (substitua pelo caminho correto do dataset)
+df = pd.read_csv('marketing_data.csv')  # Atualize com o nome correto do arquivo
 
-# Carregar os dados
-df = pd.read_csv('Data/ifood_df.csv')
+# Configurar a página
+st.set_page_config(page_title='Dashboard de Marketing', layout='wide')
+st.title('📊 Dashboard de Análise de Clientes')
 
-# Exibir os dados
-st.subheader("Dados Brutos")
-st.write(df.head())
+# Mostrar algumas estatísticas gerais
+st.sidebar.header('Filtros')
+income_range = st.sidebar.slider('Faixa de Renda', int(df['Income'].min()), int(df['Income'].max()), (int(df['Income'].min()), int(df['Income'].max())))
+df_filtered = df[(df['Income'] >= income_range[0]) & (df['Income'] <= income_range[1])]
 
-# Gráfico de Distribuição de Idade
-st.subheader("Distribuição de Idade dos Clientes")
-fig = px.histogram(df, x='Idade', nbins=20, title='Distribuição de Idade')
-st.plotly_chart(fig)
+st.write('### Visão Geral dos Clientes')
+st.dataframe(df_filtered.describe())
 
-# Gráfico de Barras: Estado Civil
-st.subheader("Estado Civil dos Clientes")
-fig = px.bar(df['Estado_Civil'].value_counts().reset_index(),
-             x='index', y='Estado_Civil',
-             labels={'index': 'Estado Civil', 'Estado_Civil': 'Contagem'},
-             title='Contagem por Estado Civil')
-st.plotly_chart(fig)
+# Gráfico de Distribuição de Gastos
+st.write('### Distribuição dos Gastos por Categoria')
+categories = ['MntFishProducts', 'MntMeatProducts', 'MntFruits', 'MntSweetProducts', 'MntWines', 'MntGoldProds']
+df_melted = df_filtered.melt(id_vars=['Income'], value_vars=categories, var_name='Categoria', value_name='Gasto')
 
-# Gráfico de Pizza: Distribuição de Gênero
-st.subheader("Distribuição de Gênero")
-fig = px.pie(df, names='Gênero', title='Proporção de Gênero')
-st.plotly_chart(fig)
+fig, ax = plt.subplots(figsize=(10, 5))
+sns.boxplot(data=df_melted, x='Categoria', y='Gasto', ax=ax)
+ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+st.pyplot(fig)
 
-# Gráfico de Dispersão: Renda vs. Idade
-st.subheader("Renda vs. Idade")
-fig = px.scatter(df, x='Idade', y='Renda_Anual', color='Gênero',
-                 title='Renda Anual vs. Idade')
-st.plotly_chart(fig)
+# Aceitação de Ofertas
+st.write('### Taxa de Aceitação das Campanhas')
+campaigns = ['AcceptedCmp1', 'AcceptedCmp2', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 'Response (target)']
+campaign_counts = df_filtered[campaigns].sum()
+
+fig, ax = plt.subplots(figsize=(10, 5))
+sns.barplot(x=campaign_counts.index, y=campaign_counts.values, ax=ax)
+ax.set_ylabel('Número de Aceites')
+st.pyplot(fig)
+
+# Compras Online vs. Lojas
+st.write('### Comparação de Compras: Online vs. Loja Física')
+df_filtered['Total_Online'] = df_filtered['NumWebPurchases'] + df_filtered['NumCatalogPurchases']
+df_filtered['Total_Loja'] = df_filtered['NumStorePurchases']
+st.bar_chart(df_filtered[['Total_Online', 'Total_Loja']].sum())
+
+st.write('Dashboard atualizado! 🎯')
