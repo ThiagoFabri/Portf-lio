@@ -28,17 +28,20 @@ sns.boxplot(data=df_melted, x='Categoria', y='Gasto', ax=ax)
 ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
 st.pyplot(fig)
 
-# Aceitação de Ofertas
-st.write('### Taxa de Aceitação das Campanhas')
-campaigns = ['AcceptedCmp1', 'AcceptedCmp2', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 'Response (target)']
-campaign_counts = df_filtered[campaigns].sum()
+# Verificação da existência de campanhas antes de gerar gráfico
+if any(campaign in df.columns for campaign in ['AcceptedCmp1', 'AcceptedCmp2', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5']):
+    st.write('### Taxa de Aceitação das Campanhas')
+    campaigns = ['AcceptedCmp1', 'AcceptedCmp2', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 'Response']
+    campaign_counts = df_filtered[campaigns].sum()
 
-fig, ax = plt.subplots(figsize=(10, 5))
-sns.barplot(x=campaign_counts.index, y=campaign_counts.values, ax=ax)
-ax.set_ylabel('Número de Aceites')
-st.pyplot(fig)
+    fig, ax = plt.subplots(figsize=(10, 5))
+    sns.barplot(x=campaign_counts.index, y=campaign_counts.values, ax=ax)
+    ax.set_ylabel('Número de Aceites')
+    st.pyplot(fig)
+else:
+    st.write('### Não há dados de campanhas para exibir')
 
-# Compras Online vs. Lojas
+# Comparação de Compras: Online vs. Loja
 st.write('### Comparação de Compras: Online vs. Loja Física')
 df_filtered['Total_Online'] = df_filtered['NumWebPurchases'] + df_filtered['NumCatalogPurchases']
 df_filtered['Total_Loja'] = df_filtered['NumStorePurchases']
