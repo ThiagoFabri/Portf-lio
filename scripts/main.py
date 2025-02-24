@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Carregar os dados (substitua pelo caminho correto do dataset)
-df = pd.read_csv('marketing_data.csv')  # Atualize com o nome correto do arquivo
+df = pd.read_csv('Data/ifood_df.csv')  # Atualize com o nome correto do arquivo
 
 # Configurar a página
 st.set_page_config(page_title='Dashboard de Marketing', layout='wide')
