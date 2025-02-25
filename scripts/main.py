@@ -30,14 +30,18 @@ st.write("""
     ### Visão Geral dos Dados
     Abaixo, apresentamos algumas estatísticas gerais dos clientes filtrados pela faixa de renda selecionada.
 """)
-
 # Filtros para faixa de renda
 st.sidebar.header('Filtros')
 income_range = st.sidebar.slider('Faixa de Renda', int(df['Income'].min()), int(df['Income'].max()),
                                  (int(df['Income'].min()), int(df['Income'].max())))
 df_filtered = df[(df['Income'] >= income_range[0]) & (df['Income'] <= income_range[1])]
 
+# Exibição dos dados brutos
+st.write('### Dados Brutos')
+st.dataframe(df_filtered)
+
 # Estatísticas descritivas
+st.write('### Estatísticas Descritivas')
 st.dataframe(df_filtered.describe())
 
 # Explicação das Colunas
@@ -83,37 +87,3 @@ st.write("""
     - **MntRegularProds**: Total gasto em produtos regulares (não promocionais).
     - **AcceptedCmpOverall**: Número total de campanhas de marketing aceitas pelo cliente.
 """)
-
-
-# Gráfico de Distribuição de Gastos
-st.write('### Distribuição dos Gastos por Categoria')
-categories = ['MntFishProducts', 'MntMeatProducts', 'MntFruits', 'MntSweetProducts', 'MntWines', 'MntGoldProds']
-df_melted = df_filtered.melt(id_vars=['Income'], value_vars=categories, var_name='Categoria', value_name='Gasto')
-
-fig, ax = plt.subplots(figsize=(10, 5))
-sns.boxplot(data=df_melted, x='Categoria', y='Gasto', ax=ax)
-ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-st.pyplot(fig)
-
-# Verificação da existência de campanhas antes de gerar gráfico
-if any(campaign in df.columns for campaign in
-       ['AcceptedCmp1', 'AcceptedCmp2', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5']):
-    st.write('### Taxa de Aceitação das Campanhas')
-    campaigns = ['AcceptedCmp1', 'AcceptedCmp2', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5', 'Response']
-    campaign_counts = df_filtered[campaigns].sum()
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-    sns.barplot(x=campaign_counts.index, y=campaign_counts.values, ax=ax)
-    ax.set_ylabel('Número de Aceites')
-    st.pyplot(fig)
-else:
-    st.write('### Não há dados de campanhas para exibir')
-
-# Comparação de Compras: Online vs. Loja
-st.write('### Comparação de Compras: Online vs. Loja Física')
-df_filtered['Total_Online'] = df_filtered['NumWebPurchases'] + df_filtered['NumCatalogPurchases']
-df_filtered['Total_Loja'] = df_filtered['NumStorePurchases']
-st.bar_chart(df_filtered[['Total_Online', 'Total_Loja']].sum())
-
-st.write('Dashboard atualizado! 🎯')
-
